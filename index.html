@@ -31,7 +31,7 @@ body { font-family: var(--font-body); font-size: 16px; line-height: 1.65; -webki
 
 /* top bar */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.brand { font-family: var(--font-display); font-size: 15px; color: var(--mute); letter-spacing: .08em; }
+.brand { font-family: var(--font-display); font-size: 15px; color: var(--mute); letter-spacing: .08em; white-space: nowrap; }
 .brand b { color: var(--ink); font-weight: 700; }
 .leaves { display: flex; gap: 4px; }
 .leaves svg { width: 14px; height: 22px; }
@@ -153,7 +153,7 @@ footer { font-size: 12px; color: var(--mute); text-align: center; }
 footer a { color: var(--mute); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-@media (max-width: 380px) { h1 { font-size: 28px; } .title-big { font-size: 38px; } .ladder { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 380px) { .brand { font-size: 13px; letter-spacing: .02em; } .leaves { gap: 2px; } .leaves svg { width: 11px; height: 18px; } h1 { font-size: 28px; } .title-big { font-size: 38px; } .ladder { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
