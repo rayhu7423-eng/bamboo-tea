@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<link rel="icon" href="data:,">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>炭為觀止・茶香半天 學習單</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* 明亮的竹林晨霧底、深茶綠文字、焙火琥珀為主色；手機單欄，頂部一排茶葉隨作答「焙」上色，最後是掛滿茶葉留言的時光茶牆 */
+:root {
+  --char: #f3f6ee;
+  --panel: #ffffff;
+  --line: #dbe3d2;
+  --ink: #23301f;
+  --mute: #66735f;
+  --leaf: #4f8a35;
+  --roast: #a8661f;
+  --bad: #c4553a;
+  --font-display: "LXGW WenKai TC", "Noto Serif TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--char); color: var(--ink); }
+body { font-family: var(--font-body); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(120% 60% at 50% -10%, #ffffff 0%, rgba(255,255,255,0) 70%); background-repeat: no-repeat; }
+.wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; display: flex; flex-direction: column; gap: 20px; }
+
+/* top bar */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { font-family: var(--font-display); font-size: 15px; color: var(--mute); letter-spacing: .08em; }
+.brand b { color: var(--ink); font-weight: 700; }
+.leaves { display: flex; gap: 4px; }
+.leaves svg { width: 14px; height: 22px; }
+.leaves path { fill: var(--line); transition: fill .4s ease; }
+.leaves .now path { fill: #9fbf86; }
+.leaves .ok path { fill: var(--roast); }
+.leaves .no path { fill: #b9c2b3; }
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; margin: 0; }
+h1 { font-size: 34px; line-height: 1.25; }
+h2 { font-size: 24px; line-height: 1.35; }
+h3 { font-size: 20px; }
+p { margin: 0; }
+.eyebrow { font-size: 13px; color: var(--roast); letter-spacing: .12em; }
+.muted { color: var(--mute); font-size: 14px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 4px 12px; font-size: 13px; color: var(--mute); }
+.chip b { color: var(--ink); font-weight: 500; }
+
+.ladder { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.rung { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 6px; text-align: center; display: flex; flex-direction: column; gap: 2px; border-top: 4px solid var(--c); }
+.rung .n { font-family: var(--font-display); font-size: 15px; white-space: nowrap; color: var(--c); }
+.rung .r { font-size: 12px; color: var(--mute); font-variant-numeric: tabular-nums; }
+
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--roast); outline-offset: 2px; }
+.btn { border: 0; border-radius: 12px; padding: 14px 18px; font-size: 16px; font-weight: 700; background: var(--roast); color: #ffffff; width: 100%; box-shadow: 0 2px 0 #7f4c15; }
+.btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #7f4c15; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.ghost { background: var(--panel); color: var(--ink); border: 1px solid var(--line); font-weight: 500; box-shadow: none; }
+
+/* question */
+.qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.qno { font-family: var(--font-display); font-size: 15px; color: var(--mute); font-variant-numeric: tabular-nums; }
+.axis { font-size: 12px; color: var(--leaf); background: #e8f1e0; border-radius: 999px; padding: 2px 10px; }
+.opts { display: grid; gap: 10px; }
+.opts.img { grid-template-columns: 1fr 1fr; }
+.opt { background: var(--panel); border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 16px; text-align: left; font-size: 16px; display: flex; align-items: center; gap: 12px; }
+.opt:hover:not([disabled]) { border-color: #b9c9aa; }
+.opt .key { font-family: var(--font-display); color: var(--mute); width: 1.2em; flex: none; }
+.opts.img .opt { flex-direction: column; padding: 10px; gap: 4px; background: #fbfdf8; }
+.opts.img svg { width: 100%; height: auto; max-height: 170px; }
+.opts.img .cap { font-size: 13px; color: var(--mute); min-height: 1.6em; }
+.opt.sel { border-color: var(--roast); background: #fbf3e8; }
+.opt.right { border-color: var(--leaf); background: #ecf5e4; }
+.opt.wrong { border-color: var(--bad); background: #fbece7; }
+.opt[disabled] { cursor: default; }
+
+.slots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.slot { aspect-ratio: 1 / 1.25; border: 1.5px dashed #c5d0ba; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; background: transparent; padding: 2px; }
+.slot .i { font-size: 11px; color: var(--mute); font-variant-numeric: tabular-nums; }
+.slot.filled { border-style: solid; border-color: var(--roast); background: var(--panel); }
+.slot.right { border-color: var(--leaf); background: #ecf5e4; }
+.slot.wrong { border-color: var(--bad); background: #fbece7; }
+.pool { display: flex; flex-wrap: wrap; gap: 8px; }
+.match { display: flex; flex-direction: column; gap: 14px; }
+.mrow { display: grid; grid-template-columns: 3em 1fr; gap: 10px; align-items: center; }
+.mk { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+.mchips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mchips .opt { padding: 10px 8px; justify-content: center; text-align: center; font-size: 15px; }
+.pool .opt { padding: 10px 16px; }
+.pool .opt.used { opacity: .3; }
+
+.feedback { border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--c); }
+.feedback .v { font-weight: 700; color: var(--c); }
+
+textarea, input[type="text"] { width: 100%; background: var(--panel); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--ink); font: inherit; resize: vertical; }
+label { font-size: 14px; color: var(--mute); display: block; margin-bottom: 6px; }
+
+/* result */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px 18px; display: flex; flex-direction: column; gap: 14px; border-top: 5px solid var(--c); box-shadow: 0 10px 30px -18px rgba(35,48,31,.35); }
+.title-big { font-family: var(--font-display); font-size: 44px; line-height: 1.15; color: var(--c); }
+.score { font-variant-numeric: tabular-nums; color: var(--mute); }
+.score b { color: var(--ink); font-size: 20px; }
+.radar { display: flex; justify-content: center; }
+.radar svg { width: 100%; max-width: 400px; height: auto; }
+.axes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 14px; }
+.axes div { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 4px 0; }
+.axes span:last-child { font-variant-numeric: tabular-nums; color: var(--roast); font-weight: 500; }
+.share img { width: 100%; border-radius: 12px; display: block; border: 1px solid var(--line); }
+
+/* 時光茶牆：一排排竹竿，茶葉交錯疊掛；點一片就掀起來讀 */
+.teawall { position: relative; container-type: inline-size; background: linear-gradient(180deg, #e9f0e0 0%, #f6f8f1 100%); border: 1px solid var(--line); border-radius: 16px; padding: 14px 10px 18px; }
+.wallbox { position: relative; }
+.pole { position: absolute; left: -2px; right: -2px; height: 3.6cqw; border-radius: 2cqw;
+  background: linear-gradient(180deg, #e2d394 0%, #c8ab5d 55%, #a98a42 100%); box-shadow: 0 2px 0 rgba(80,60,20,.14); }
+.pole::after { content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: repeating-linear-gradient(90deg, transparent 0 22cqw, rgba(110,84,32,.55) 22cqw calc(22cqw + 3px), transparent calc(22cqw + 3px) calc(22cqw + 6px)); }
+.leaf2 { position: absolute; width: 40cqw; padding: 0; border: 0; background: none; display: flex; flex-direction: column; align-items: center;
+  transform-origin: 50% 0; transform: rotate(var(--r)); animation: sway 7s ease-in-out infinite; animation-delay: var(--d);
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), filter .35s ease; }
+.leaf2.oL { transform-origin: 0 0; } .leaf2.oR { transform-origin: 100% 0; }
+.leaf2 .string { width: 1.5px; height: 2.4cqw; background: #8c7a4a; }
+.leaf2 .body { position: relative; width: 100%; aspect-ratio: 150 / 210; }
+.leaf2 svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.leaf2 .txt { position: absolute; left: 22%; right: 22%; top: 23%; bottom: 33%; display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: var(--font-display); font-size: 3.5cqw; line-height: 1.4; color: #1f2b1a; overflow: hidden; overflow-wrap: anywhere; }
+.leaf2 .by { position: absolute; left: 25%; right: 25%; top: 68%; text-align: center; font-size: 2.4cqw; line-height: 1.3; color: #4a5a40; }
+.leaf2 .by b { color: var(--roast); font-weight: 500; }
+.leaf2.open { animation: none; transform: rotate(0deg) scale(1.38); z-index: 900 !important; filter: drop-shadow(0 10px 14px rgba(35,48,31,.28)); }
+.teawall.has-open .leaf2:not(.open) { filter: saturate(.7) brightness(.97); }
+@keyframes sway { 0%, 100% { transform: rotate(var(--r)); } 50% { transform: rotate(calc(var(--r) * -1)); } }
+.wallnote { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.sample { font-size: 13px; color: #7a5a1c; background: #fbf1df; border: 1px dashed #d9b77a; border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; }
+.note { font-size: 13px; color: var(--mute); border: 1px dashed #c5d0ba; border-radius: 10px; padding: 10px 12px; background: rgba(255,255,255,.6); }
+
+/* stats */
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.tile .big { font-family: var(--font-display); font-size: 34px; font-variant-numeric: tabular-nums; }
+.bars { display: flex; flex-direction: column; gap: 8px; }
+.bar { display: grid; grid-template-columns: 7.5em 1fr 3em; gap: 8px; align-items: center; font-size: 14px; }
+.bar .track { height: 10px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--roast); border-radius: 999px; }
+.bar .fill.low { background: var(--bad); }
+.bar span:last-child { text-align: right; font-variant-numeric: tabular-nums; color: var(--mute); }
+footer { font-size: 12px; color: var(--mute); text-align: center; }
+footer a { color: var(--mute); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (max-width: 380px) { h1 { font-size: 28px; } .title-big { font-size: 38px; } .ladder { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><b>炭為觀止・茶香半天</b></div>
+    <div class="leaves" id="leaves" aria-hidden="true"></div>
+  </div>
+  <main id="app"></main>
+  
+</div>
+
+<script>
+/* ---------------- data ---------------- */
+const AXES = ["茶樹認識", "製茶工藝", "竹與竹炭", "小半天文化"];
+const TITLES = [
+  { min: 8, name: "炭焙老師傅", line: "竹、茶、在地文化全通，可以來當小半天代言人", c: "#8a4f1c" },
+  { min: 6, name: "中焙凍頂", line: "很懂小半天了，只差一點點", c: "#b8742a" },
+  { min: 4, name: "清香烏龍", line: "竹與茶的基本功到手，再焙一下會更香", c: "#8c8424" },
+  { min: 0, name: "一心二葉", line: "剛冒出新芽，小半天還有很多等你認識", c: "#4f8a35" },
+];
+const rangeOf = (i) => ["8 題全對", "6–7 題", "4–5 題", "0–3 題"][i];
+const titleFor = (s) => TITLES.find((t) => s >= t.min);
+
+/* ---------- drawings (generated, no outside images) ---------- */
+function leafPts(len, wid, serr, teeth) {
+  const N = (teeth || 10) * 2, up = [], lo = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    let w = wid * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.75)), 0.9);
+    let x = t * len;
+    if (serr && i > 1 && i < N - 1 && i % 2 === 1) { w += wid * 0.13; x += len / N * 0.45; }
+    up.push([x, -w]); lo.push([x, w]);
+  }
+  return up.concat(lo.reverse());
+}
+const toPath = (pts) => "M" + pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join("L") + "Z";
+function leafG(x, y, rot, len, wid, serr, fill, teeth) {
+  return `<g transform="translate(${x},${y}) rotate(${rot})"><path d="${toPath(leafPts(len, wid, serr, teeth))}" fill="${fill}"/><line x1="2" y1="0" x2="${len * 0.92}" y2="0" stroke="#1d2a17" stroke-width="1.2" opacity=".55"/></g>`;
+}
+function sprig(bud, leaves) {
+  let s = `<svg viewBox="0 0 120 200" role="img" aria-label="茶枝"><line x1="60" y1="196" x2="60" y2="${bud ? 44 : 64}" stroke="#7a8c5a" stroke-width="3" stroke-linecap="round"/>`;
+  if (!bud) s += `<line x1="55" y1="64" x2="65" y2="60" stroke="#7a8c5a" stroke-width="3" stroke-linecap="round"/>`;
+  const ys = [74, 106, 138], col = ["#a7cf7f", "#8db36e", "#6f9654"];
+  for (let i = 0; i < leaves; i++) {
+    const left = i % 2 === 1;
+    s += leafG(60, ys[i] + (bud ? 0 : 6), left ? -145 : -35, 50 + i * 4, 13 + i, true, col[i], 9);
+  }
+  if (bud) s += leafG(60, 48, -90, 34, 5.5, false, "#cfe3b4");
+  return s + "</svg>";
+}
+function leafCard(kind) {
+  const open = `<svg viewBox="0 0 140 200" role="img" aria-label="葉片">`;
+  if (kind === "tea") return open + `<line x1="70" y1="190" x2="70" y2="176" stroke="#7a8c5a" stroke-width="3"/>` + leafG(70, 178, -90, 150, 34, true, "#7fa863", 13) + "</svg>";
+  if (kind === "bamboo") return open + `<line x1="70" y1="194" x2="70" y2="182" stroke="#7a8c5a" stroke-width="3"/>` + leafG(70, 184, -90, 176, 15, false, "#93b979") + "</svg>";
+  if (kind === "round") return open + `<line x1="70" y1="192" x2="70" y2="168" stroke="#7a8c5a" stroke-width="3"/>` + leafG(70, 170, -90, 132, 46, false, "#6f9654") + "</svg>";
+  return open + `<path d="M70 192 L70 120" stroke="#9a8f4a" stroke-width="3"/><path d="M70 122 C44 116 22 92 20 58 C38 44 56 50 66 64 L70 76 L74 64 C84 50 102 44 120 58 C118 92 96 116 70 122Z" fill="#c9b64a"/>` +
+    [30, 45, 60, 75, 90, 105].map((a) => { const r = a * Math.PI / 180; return `<line x1="70" y1="120" x2="${70 - Math.cos(r) * 52}" y2="${120 - Math.sin(r) * 52}" stroke="#8f7f2c" stroke-width=".8" opacity=".6"/>`; }).join("") + "</svg>";
+}
+
+const Q = [
+  { axis: 0, type: "img", title: "哪一張是「一心二葉」？", hint: "早上茶園走讀看過的採摘標準",
+    opts: [{ svg: () => sprig(1, 1), cap: "一心一葉" }, { svg: () => sprig(1, 2), cap: "一心二葉", ok: true }, { svg: () => sprig(1, 3), cap: "一心三葉" }, { svg: () => sprig(0, 2), cap: "兩片葉，沒有芽" }],
+    exp: "「心」是頂端還沒展開的芽，下面再帶兩片嫩葉，就是一心二葉，是採茶時常說的採摘標準。" },
+  { axis: 0, type: "img", title: "哪一片是茶樹的葉子？", hint: "看葉子的邊緣",
+    opts: [{ svg: () => leafCard("bamboo"), cap: "竹葉" }, { svg: () => leafCard("tea"), cap: "茶樹葉", ok: true }, { svg: () => leafCard("ginkgo"), cap: "銀杏葉" }, { svg: () => leafCard("round"), cap: "一般圓葉" }],
+    exp: "茶樹葉片的邊緣有一圈細細的鋸齒；竹葉細長、銀杏葉是扇形，邊緣都比較平滑。" },
+  { axis: 1, type: "order", title: "把烏龍茶的製程排好", hint: "依照順序點選；點上方格子可以取消",
+    steps: ["萎凋", "浪菁", "殺菁", "揉捻", "乾燥", "焙火"],
+    exp: "萎凋讓葉子消水 → 浪菁攪拌，促進發酵、帶出香氣 → 殺菁用高溫停止發酵 → 揉捻（凍頂烏龍會團揉成半球形）→ 乾燥 → 焙火決定焙香的輕重。" },
+  { axis: 2, type: "mc", title: "室友的鞋櫃有味道，香薰包裡哪個材料最能幫忙？",
+    opts: [{ t: "焙過的茶葉" }, { t: "竹炭", ok: true }, { t: "乾燥竹葉" }, { t: "棉麻香薰袋" }],
+    exp: "竹炭有很多細小孔洞，可以吸附異味。業者建議放在衣櫃或鞋櫃，大約一個月更換一次。" },
+  { axis: 2, type: "mc", title: "小半天的竹炭窯，是用什麼木頭當燃料？",
+    opts: [{ t: "相思木" }, { t: "龍眼木", ok: true }, { t: "孟宗竹" }, { t: "杉木" }],
+    exp: "孟宗竹是竹炭的材料，燃料是龍眼木；燒 4 天 3 夜、約 800 度，再冷卻約 20 天（業者訪談）。" },
+  { axis: 1, type: "mc", title: "「焙火」是鹿谷哪一種茶的招牌工藝？",
+    opts: [{ t: "凍頂烏龍", ok: true }, { t: "東方美人" }, { t: "碧螺春" }, { t: "日月潭紅茶" }],
+    exp: "鹿谷是凍頂烏龍的產地，焙火決定茶香的深淺。你今天焙茶的步驟，就是這門工藝的迷你版。" },
+  { axis: 3, type: "match", title: "把小半天的「三金」配對起來", hint: "每一列選一個，選好按「確定」",
+    rows: [{ k: "綠金", c: "#4f8a35", ans: 0 }, { k: "黃金", c: "#a8861f", ans: 1 }, { k: "黑金", c: "#3b3a33", ans: 2 }],
+    choices: ["茶葉", "竹筍", "竹炭", "香菇"],
+    exp: "綠金是茶葉、黃金是竹筍、黑金是竹炭。你手上的香薰包，就用到了綠金和黑金。" },
+  { axis: 3, type: "mc", title: "孟宗竹林古戰場和哪個歷史事件有關？",
+    opts: [{ t: "朱一貴事件" }, { t: "林爽文事件", ok: true }, { t: "戴潮春事件" }, { t: "霧社事件" }],
+    exp: "孟宗竹林古戰場相傳是清代林爽文事件（1786 年起）的戰場之一。" },
+  { type: "open", title: "用一句話推坑朋友來小半天" },
+];
+const SCORED = 8;
+
+/* ---------------- state ---------------- */
+let S = fresh();
+function fresh() {
+  return { screen: "start", idx: 0, done: Array(SCORED).fill(null), pick: null, multi: [], order: [], match: [null, null, null], shuffles: makeShuffles(), message: "", nickname: "", saved: null };
+}
+function shuffle(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+function makeShuffles() {
+  return Q.map((q) => q.type === "img" || q.type === "mc" ? shuffle(q.opts.map((_, i) => i)) : q.type === "order" ? shuffle(q.steps.map((_, i) => i)) : q.type === "multi" ? q.opts.map((_, i) => i) : []);
+}
+const score = () => S.done.filter((d) => d === true).length;
+const axisPct = () => AXES.map((_, a) => { const qs = Q.map((q, i) => [q, i]).filter(([q]) => q.axis === a); return qs.filter(([, i]) => S.done[i]).length / qs.length; });
+
+/* ---------------- shared data：Google 試算表（Apps Script） ---------------- */
+// 把 Apps Script「網頁應用程式」的網址貼在下面引號裡；留空就是示範模式（不記錄作答）
+const SHEET_URL = "";
+const DB = { db: null, uid: null, subs: [], loaded: false, slow: false, failed: false, writeFailed: false };
+function sheetDB(url) {
+  return { collection: () => ({
+    orderBy() { return this; }, limit() { return this; },
+    onSnapshot(onNext, onErr) {
+      let first = true;
+      const once = async () => {
+        try {
+          const r = await fetch(url + (url.includes("?") ? "&" : "?") + "t=" + Date.now(), { cache: "no-store" });
+          const j = await r.json();
+          if (!j || !j.ok) throw new Error("bad response");
+          onNext({ docs: (j.rows || []).map((x) => ({ id: x.id, data: () => x })), metadata: { fromCache: false } });
+        } catch (e) { if (first) onErr(e); }
+        first = false;
+      };
+      const tick = async () => {
+        if (first || S.screen === "result" || S.screen === "stats") await once();
+        setTimeout(tick, S.screen === "stats" ? 8000 : 12000);
+      };
+      tick();
+      return once;
+    },
+    doc: (id) => ({ async set(data) {
+      const r = await fetch(url, { method: "POST", body: JSON.stringify(Object.assign({ id }, data)) });
+      const j = await r.json();
+      if (!j || !j.ok) throw new Error((j && j.error) || "write failed");
+    } }),
+  }) };
+}
+(() => {
+  if (!SHEET_URL) return;
+  try {
+    let id = localStorage.getItem("bt_uid");
+    if (!id) { id = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12)); localStorage.setItem("bt_uid", id); }
+    DB.uid = id;
+  } catch (e) { DB.uid = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12); }
+  DB.db = sheetDB(SHEET_URL);
+  const timer = setTimeout(() => { DB.slow = true; render(); }, 10000);
+  DB.poke = DB.db.collection("submissions").orderBy("createdAt", "desc").limit(300).onSnapshot((snap) => {
+    DB.subs = snap.docs.map((d) => clean(d.id, d.data())).filter(Boolean);
+    DB.loaded = true; DB.slow = false; DB.failed = false; clearTimeout(timer);
+    if (S.screen === "result" || S.screen === "stats") render();
+  }, () => { DB.failed = true; clearTimeout(timer); render(); });
+})();
+function clean(id, d) {
+  if (!d || typeof d !== "object") return null;
+  const correct = Array.isArray(d.correct) ? d.correct.slice(0, SCORED).map((x) => x === true) : [];
+  if (correct.length !== SCORED) return null;
+  return { id, correct, score: correct.filter(Boolean).length, message: typeof d.message === "string" ? d.message.slice(0, 30) : "", nickname: typeof d.nickname === "string" ? d.nickname.slice(0, 12) : "", createdAt: typeof d.createdAt === "number" ? d.createdAt : 0 };
+}
+async function saveResult() {
+  if (!DB.db || !DB.uid) { S.saved = false; return; }
+  try {
+    await DB.db.collection("submissions").doc(DB.uid).set({ correct: S.done.map((d) => d === true), message: S.message.trim().slice(0, 30), nickname: S.nickname.trim().slice(0, 12), createdAt: Date.now() });
+    S.saved = true;
+    if (DB.poke) DB.poke();
+  } catch (e) { S.saved = false; DB.writeFailed = true; }
+}
+
+/* ---------------- render helpers ---------------- */
+const app = document.getElementById("app");
+const el = (tag, attrs, ...kids) => {
+  const n = document.createElement(tag);
+  for (const k in attrs || {}) { if (k === "class") n.className = attrs[k]; else if (k.startsWith("on")) n.addEventListener(k.slice(2), attrs[k]); else if (k === "html") n.innerHTML = attrs[k]; else if (attrs[k] !== false && attrs[k] != null) n.setAttribute(k, attrs[k] === true ? "" : attrs[k]); }
+  for (const k of kids.flat()) if (k != null && k !== false) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+};
+const LEAF = '<svg viewBox="0 0 14 22"><path d="M7 1 C13 7 13 15 7 21 C1 15 1 7 7 1Z"/></svg>';
+function drawLeaves() {
+  const box = document.getElementById("leaves");
+  box.innerHTML = "";
+  for (let i = 0; i < SCORED; i++) {
+    const s = el("span", { html: LEAF });
+    s.className = S.done[i] === true ? "ok" : S.done[i] === false ? "no" : (S.screen === "q" && S.idx === i ? "now" : "");
+    box.append(s);
+  }
+}
+
+function render() {
+  drawLeaves();
+  app.innerHTML = "";
+  const view = S.screen === "stats" ? viewStats() : S.screen === "result" ? viewResult() : S.screen === "q" ? viewQuestion() : viewStart();
+  app.append(view);
+}
+
+function viewStart() {
+  return el("div", { class: "wrap", style: "padding:0" },
+    el("p", { class: "eyebrow" }, "課後學習單｜竹茶香薰手作"),
+    el("h1", null, "你今天焙出幾分香？"),
+    el("p", null, "8 題小測驗加 1 題留言，大約 3 分鐘。答完會拿到你的茶竹稱號和雷達圖，可以存成圖片分享。"),
+    el("div", { class: "chips" }, AXES.map((a) => el("span", { class: "chip" }, el("b", null, a), " 2 題"))),
+    el("div", null,
+      el("p", { class: "muted", style: "margin-bottom:8px" }, "稱號依答對題數，從新芽一路焙到炭焙："),
+      el("div", { class: "ladder" }, TITLES.slice().reverse().map((t, i) => el("div", { class: "rung", style: `--c:${t.c}` }, el("span", { class: "n" }, t.name), el("span", { class: "r" }, rangeOf(3 - i)))))),
+    el("button", { class: "btn", onclick: () => { S.screen = "q"; S.idx = 0; render(); } }, "開始作答"));
+}
+
+function verdict(ok, q) {
+  return el("div", { class: "feedback", style: `--c:${ok ? "var(--leaf)" : "var(--bad)"}` },
+    el("span", { class: "v" }, ok ? "答對了" : "差一點"),
+    el("p", null, q.exp));
+}
+
+function viewQuestion() {
+  const q = Q[S.idx], answered = S.idx < SCORED && S.done[S.idx] !== null;
+  const box = el("div", { class: "wrap", style: "padding:0" });
+  box.append(el("div", { class: "qhead" },
+    el("span", { class: "qno" }, `第 ${S.idx + 1} 題／共 ${Q.length} 題`),
+    q.axis != null ? el("span", { class: "axis" }, AXES[q.axis]) : el("span", { class: "axis" }, "留言，不計分")));
+  box.append(el("h2", null, q.title));
+  if (q.hint) box.append(el("p", { class: "muted" }, q.hint));
+
+  const next = () => { S.pick = null; S.multi = []; S.order = []; S.match = [null, null, null]; S.idx++; render(); window.scrollTo(0, 0); };
+  const nextBtn = () => el("button", { class: "btn", onclick: next }, S.idx === SCORED - 1 ? "最後一題：留言" : "下一題");
+
+  if (q.type === "img" || q.type === "mc") {
+    const grid = el("div", { class: "opts" + (q.type === "img" ? " img" : "") });
+    S.shuffles[S.idx].forEach((oi, pos) => {
+      const o = q.opts[oi];
+      let cls = "opt";
+      if (answered) { if (o.ok) cls += " right"; else if (S.pick === oi) cls += " wrong"; }
+      const b = el("button", { class: cls, disabled: answered, onclick: () => { S.pick = oi; S.done[S.idx] = !!o.ok; render(); } });
+      if (q.type === "img") { b.append(el("span", { html: o.svg() })); b.append(el("span", { class: "cap" }, answered ? o.cap : "ABCD"[pos])); b.setAttribute("aria-label", "選項 " + "ABCD"[pos]); }
+      else { b.append(el("span", { class: "key" }, "ABCD"[pos]), el("span", null, o.t)); }
+      grid.append(b);
+    });
+    box.append(grid);
+    if (answered) box.append(verdict(S.done[S.idx], q), nextBtn());
+  }
+
+  if (q.type === "multi") {
+    const grid = el("div", { class: "opts", style: "grid-template-columns:1fr 1fr" });
+    q.opts.forEach((o, oi) => {
+      const on = S.multi.includes(oi);
+      let cls = "opt" + (on ? " sel" : "");
+      if (answered) cls = "opt" + (o.ok ? " right" : on ? " wrong" : "");
+      grid.append(el("button", { class: cls, disabled: answered, "aria-pressed": on ? "true" : "false", onclick: () => { S.multi = on ? S.multi.filter((x) => x !== oi) : S.multi.concat(oi); render(); } }, el("span", { class: "key" }, on ? "●" : "○"), el("span", null, o.t)));
+    });
+    box.append(grid);
+    if (!answered) box.append(el("button", { class: "btn", disabled: S.multi.length === 0, onclick: () => {
+      const want = q.opts.map((o, i) => o.ok ? i : -1).filter((i) => i >= 0);
+      S.done[S.idx] = want.length === S.multi.length && want.every((i) => S.multi.includes(i)); render(); } }, "確定"));
+    else box.append(verdict(S.done[S.idx], q), nextBtn());
+  }
+
+  if (q.type === "match") {
+    const rows = el("div", { class: "match" });
+    q.rows.forEach((r, ri) => {
+      const pick = S.match[ri];
+      const chips = el("div", { class: "mchips" });
+      q.choices.forEach((c, ci) => {
+        let cls = "opt" + (pick === ci ? " sel" : "");
+        if (answered) cls = "opt" + (ci === r.ans ? " right" : pick === ci ? " wrong" : "");
+        chips.append(el("button", { class: cls, disabled: answered, "aria-pressed": pick === ci ? "true" : "false", "aria-label": `${r.k}：${c}`,
+          onclick: () => { S.match = S.match.slice(); S.match[ri] = ci; render(); } }, c));
+      });
+      rows.append(el("div", { class: "mrow" }, el("span", { class: "mk", style: `color:${r.c}` }, r.k), chips));
+    });
+    box.append(rows);
+    if (!answered) box.append(el("button", { class: "btn", disabled: S.match.some((x) => x == null), onclick: () => {
+      S.done[S.idx] = q.rows.every((r, ri) => S.match[ri] === r.ans); render(); } }, "確定"));
+    else box.append(verdict(S.done[S.idx], q), nextBtn());
+  }
+
+  if (q.type === "order") {
+    const slots = el("div", { class: "slots" });
+    for (let i = 0; i < q.steps.length; i++) {
+      const si = S.order[i];
+      let cls = "slot" + (si != null ? " filled" : "");
+      if (answered && si != null) cls += si === i ? " right" : " wrong";
+      slots.append(el("button", { class: cls, disabled: answered || si == null, "aria-label": `第 ${i + 1} 步`, onclick: () => { S.order = S.order.filter((x) => x !== si); render(); } },
+        el("span", { class: "i" }, String(i + 1)), si != null ? q.steps[si] : ""));
+    }
+    box.append(slots);
+    if (!answered) {
+      const pool = el("div", { class: "pool" });
+      S.shuffles[S.idx].forEach((si) => {
+        const used = S.order.includes(si);
+        pool.append(el("button", { class: "opt" + (used ? " used" : ""), disabled: used, onclick: () => { if (S.order.length < q.steps.length) { S.order = S.order.concat(si); render(); } } }, q.steps[si]));
+      });
+      box.append(pool);
+      box.append(el("button", { class: "btn", disabled: S.order.length < q.steps.length, onclick: () => { S.done[S.idx] = S.order.every((v, i) => v === i); render(); } }, "確定"));
+    } else {
+      box.append(el("p", { class: "muted" }, "正確順序：" + q.steps.join(" → ")));
+      box.append(verdict(S.done[S.idx], q), nextBtn());
+    }
+  }
+
+  if (q.type === "open") {
+    const ta = el("textarea", { id: "msg", rows: "3", maxlength: "30", placeholder: "例如：來小半天，焙一包自己的竹茶香！" });
+    ta.value = S.message;
+    ta.addEventListener("input", () => { S.message = ta.value; btn.disabled = !ta.value.trim(); });
+    const nk = el("input", { type: "text", id: "nick", maxlength: "12", placeholder: "不填就顯示「匿名」" });
+    nk.value = S.nickname;
+    nk.addEventListener("input", () => { S.nickname = nk.value; });
+    const btn = el("button", { class: "btn", disabled: !S.message.trim(), onclick: async () => { btn.disabled = true; btn.textContent = "送出中…"; await saveResult(); S.screen = "result"; render(); window.scrollTo(0, 0); } }, "送出，看我的稱號");
+    box.append(el("div", null, el("label", { for: "msg" }, "你的一句話（30 字內），會變成一片茶葉掛上時光茶牆"), ta));
+    box.append(el("div", null, el("label", { for: "nick" }, "暱稱（選填）"), nk));
+    box.append(btn);
+    box.append(el("button", { class: "btn ghost", onclick: async () => { S.message = ""; await saveResult(); S.screen = "result"; render(); window.scrollTo(0, 0); } }, "跳過留言"));
+  }
+  return box;
+}
+
+/* ---------------- radar ---------------- */
+function radarSVG(vals, color) {
+  const cx = 200, cy = 150, R = 100, ang = [-90, 0, 90, 180].map((d) => d * Math.PI / 180);
+  const pt = (a, r) => [cx + Math.cos(ang[a]) * r, cy + Math.sin(ang[a]) * r];
+  const ring = (f) => ang.map((_, a) => pt(a, R * f).join(",")).join(" ");
+  const poly = vals.map((v, a) => pt(a, R * Math.max(v, 0.04)).join(",")).join(" ");
+  const lab = [[cx, cy - R - 16, "middle"], [cx + R + 10, cy + 5, "start"], [cx, cy + R + 26, "middle"], [cx - R - 10, cy + 5, "end"]];
+  let s = `<svg viewBox="0 0 400 300" role="img" aria-label="四個面向的答對率">`;
+  s += `<polygon points="${ring(1)}" fill="none" stroke="#cfd8c6" stroke-width="1.5"/><polygon points="${ring(0.5)}" fill="none" stroke="#cfd8c6" stroke-dasharray="3 4"/>`;
+  ang.forEach((_, a) => { const p = pt(a, R); s += `<line x1="${cx}" y1="${cy}" x2="${p[0]}" y2="${p[1]}" stroke="#cfd8c6"/>`; });
+  s += `<text x="${cx + 4}" y="${cy - R * 0.5 - 4}" fill="#8a957f" font-size="10">50%</text><text x="${cx + 4}" y="${cy - R - 4}" fill="#8a957f" font-size="10">100%</text>`;
+  s += `<polygon points="${poly}" fill="${color}" fill-opacity=".22" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  vals.forEach((v, a) => { const p = pt(a, R * Math.max(v, 0.04)); s += `<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="${color}"/>`; });
+  lab.forEach(([x, y, anc], a) => { s += `<text x="${x}" y="${y}" text-anchor="${anc}" fill="#23301f" font-size="14" font-family="Noto Sans TC, sans-serif">${AXES[a]}</text>`; });
+  return s + "</svg>";
+}
+
+/* ---------------- share image (canvas, IG 限動尺寸) ---------------- */
+async function makeCard() {
+  try { await document.fonts.load('700 120px "LXGW WenKai TC"'); await document.fonts.load('500 40px "Noto Sans TC"'); } catch (e) {}
+  const t = titleFor(score()), vals = axisPct();
+  const W = 1080, H = 1920, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const g = c.getContext("2d");
+  g.fillStyle = "#f3f6ee"; g.fillRect(0, 0, W, H);
+  g.strokeStyle = "rgba(79,138,53,.07)"; g.lineWidth = 18;
+  for (let x = 60; x < W; x += 150) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); for (let y = 180 + (x % 300); y < H; y += 420) { g.fillStyle = "rgba(79,138,53,.12)"; g.fillRect(x - 12, y, 24, 6); } }
+  g.fillStyle = "#66735f"; g.font = '500 40px "Noto Sans TC", sans-serif'; g.textAlign = "center";
+  g.fillText("炭為觀止・茶香半天｜小半天竹茶香薰", W / 2, 200);
+  g.fillText("我的茶竹稱號", W / 2, 360);
+  g.fillStyle = t.c; g.font = '700 150px "LXGW WenKai TC", serif'; g.fillText(t.name, W / 2, 540);
+  g.fillStyle = "#23301f"; g.font = '500 44px "Noto Sans TC", sans-serif'; g.fillText(t.line, W / 2, 640);
+  g.fillStyle = "#66735f"; g.font = '500 40px "Noto Sans TC", sans-serif'; g.fillText(`答對 ${score()} / ${SCORED} 題`, W / 2, 720);
+  const cx = W / 2, cy = 1170, R = 260, ang = [-90, 0, 90, 180].map((d) => d * Math.PI / 180);
+  const P = (a, r) => [cx + Math.cos(ang[a]) * r, cy + Math.sin(ang[a]) * r];
+  g.strokeStyle = "#cfd8c6"; g.lineWidth = 3;
+  [1, 0.5].forEach((f) => { g.beginPath(); ang.forEach((_, a) => { const p = P(a, R * f); a ? g.lineTo(...p) : g.moveTo(...p); }); g.closePath(); g.stroke(); });
+  ang.forEach((_, a) => { g.beginPath(); g.moveTo(cx, cy); g.lineTo(...P(a, R)); g.stroke(); });
+  g.beginPath(); vals.forEach((v, a) => { const p = P(a, R * Math.max(v, 0.04)); a ? g.lineTo(...p) : g.moveTo(...p); }); g.closePath();
+  g.fillStyle = t.c + "38"; g.fill(); g.strokeStyle = t.c; g.lineWidth = 7; g.lineJoin = "round"; g.stroke();
+  g.fillStyle = "#23301f"; g.font = '500 42px "Noto Sans TC", sans-serif';
+  const L = [[cx, cy - R - 40, "center"], [cx + R + 24, cy + 16, "left"], [cx, cy + R + 70, "center"], [cx - R - 24, cy + 16, "right"]];
+  L.forEach(([x, y, al], a) => { g.textAlign = al; g.fillText(AXES[a], x, y); g.fillStyle = "#a8661f"; g.font = '500 36px "Noto Sans TC", sans-serif'; g.fillText(Math.round(vals[a] * 100) + "%", x, y + 48); g.fillStyle = "#23301f"; g.font = '500 42px "Noto Sans TC", sans-serif'; });
+  g.textAlign = "center"; g.fillStyle = "#66735f"; g.font = '500 38px "Noto Sans TC", sans-serif';
+  g.fillText("南投鹿谷・小半天休閒農業區", W / 2, 1760);
+  return c;
+}
+
+/* ---------------- result ---------------- */
+function viewResult() {
+  const t = titleFor(score()), vals = axisPct();
+  const box = el("div", { class: "wrap", style: "padding:0" });
+  box.append(el("div", { class: "card", style: `--c:${t.c}` },
+    el("p", { class: "eyebrow" }, "你的茶竹稱號"),
+    el("div", { class: "title-big" }, t.name),
+    el("p", null, t.line),
+    el("p", { class: "score" }, "答對 ", el("b", null, `${score()} / ${SCORED}`), " 題"),
+    el("div", { class: "radar", html: radarSVG(vals, t.c) }),
+    el("div", { class: "axes" }, AXES.map((a, i) => el("div", null, el("span", null, a), el("span", null, Math.round(vals[i] * 100) + "%"))))));
+
+  const share = el("div", { class: "share", style: "display:flex;flex-direction:column;gap:10px" });
+  const mk = el("button", { class: "btn", onclick: async () => {
+    mk.disabled = true; mk.textContent = "產生圖片中…";
+    const c = await makeCard();
+    const url = c.toDataURL("image/png");
+    share.innerHTML = "";
+    share.append(el("img", { src: url, alt: `我的茶竹稱號：${t.name}，答對 ${score()} 題` }));
+    share.append(el("p", { class: "muted" }, "手機上長按圖片就能儲存，再分享到 IG 限動。"));
+    let dl = null; try { dl = await window.claude?.use?.("downloads"); } catch (e) {}
+    if (!dl) {
+      const a = el("a", { class: "btn ghost", href: url, download: `茶竹稱號-${t.name}.png` }, "下載圖片");
+      share.append(a);
+    } else {
+      const sb = el("button", { class: "btn ghost", onclick: () => c.toBlob(async (blob) => {
+        try { await dl.save({ filename: `茶竹稱號-${t.name}.png`, data: blob }); sb.textContent = "已儲存"; }
+        catch (e) { sb.textContent = e && e.code === "declined" ? "已取消，可以再按一次" : "這裡無法下載，請長按圖片儲存"; }
+      }, "image/png") }, "下載圖片");
+      share.append(sb);
+    }
+  } }, "存成 IG 限動圖片");
+  share.append(mk);
+  box.append(share);
+
+  /* 時光茶牆 */
+  box.append(el("div", null, el("h3", null, "時光茶牆"), el("p", { class: "muted" }, "每一片茶葉都是一則推坑留言，點一片就能把它掀起來看")));
+  const mine = S.message.trim();
+  const others = DB.subs.filter((s) => s.message && s.id !== DB.uid);
+  const items = [];
+  if (mine) items.push({ who: S.nickname.trim() || "匿名", title: titleFor(score()).name, text: mine, me: true });
+  const useSample = !others.length;
+  if (useSample) SAMPLES.forEach((m, i) => items.push({ who: "示意", title: TITLES[(i * 3) % 4].name, text: m, sample: true }));
+  else others.slice(0, 60).forEach((s) => items.push({ who: s.nickname || "匿名", title: titleFor(s.score).name, text: s.message }));
+  box.append(teaWall(items, useSample));
+  const notes = el("div", { class: "wallnote" });
+  if (!DB.db || DB.failed) {}
+  else if (!DB.loaded && !others.length && DB.slow) notes.append(el("p", { class: "note" }, "茶牆暫時讀不到，網路可能不穩，稍後會自動更新。"));
+  if (S.saved === false && DB.db && DB.writeFailed) notes.append(el("p", { class: "note" }, "這個帳號沒有寫入權限，你的結果沒有被記錄。"));
+  if (notes.childNodes.length) box.append(notes);
+  box.append(el("button", { class: "btn ghost", onclick: () => { S = fresh(); render(); window.scrollTo(0, 0); } }, "再測一次"));
+  return box;
+}
+const LEAF_FILLS = ["#cfe3b4", "#c3dca3", "#d8e9c5", "#bcd79b", "#d2e6bb", "#c9e0ab"];
+let LEAF_SHAPE = null;
+function leafShape() {
+  if (LEAF_SHAPE) return LEAF_SHAPE;
+  const L = 188, Wd = 58, N = 36, up = [], lo = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    let w = Wd * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.95)), 0.75);
+    if (i > 2 && i < N - 2 && i % 2 === 1) w += 2.4;
+    up.push([t * L, -w]); lo.push([t * L, w]);
+  }
+  const pts = up.concat(lo.reverse()).map(([x, y]) => [75 - y, 12 + x]);
+  return (LEAF_SHAPE = toPath(pts));
+}
+const SAMPLES = [
+  "焙茶的香味飄出來那一刻超療癒", "竹林隨便拍都像電影場景", "原來竹炭是用龍眼木燒出來的", "香薰包掛宿舍衣櫃剛剛好",
+  "終於分得出一心二葉了", "跟社團一起來，下次想看螢火蟲", "自己焙的茶喝起來特別香", "竹筒飯配筍湯，吃飽再走一段竹林",
+  "冬天想再來吃冬筍", "比市區香氛課多了好多故事", "時光膠囊，一年後見", "第一次知道凍頂烏龍要焙火",
+  "山上空氣好到不想下山", "揪朋友來玩大半天剛剛好",
+];
+const LEAF_W = 40, ROW_H = 32;              /* 單位 cqw：葉寬 40、每排間距 32（葉高約 59，上下交疊約四成） */
+const ROW_X = [[0, 30, 60], [15, 45]];      /* 3-2-3-2 交錯排列 */
+function teaWall(items, sample) {
+  const wall = el("div", { class: "teawall" });
+  if (sample) wall.append(el("p", { class: "sample" }, "示意畫面：除了你自己的葉子，其他是範例留言，正式使用時會換成學員的真實留言。"));
+  const boxEl = el("div", { class: "wallbox" });
+  let i = 0, row = 0;
+  const leaves = [];
+  while (i < items.length || row === 0) {
+    const xs = ROW_X[row % 2];
+    boxEl.append(el("div", { class: "pole", "aria-hidden": "true", style: `top:${row * ROW_H}cqw;z-index:0` }));
+    xs.forEach((x, k) => {
+      if (i >= items.length) return;
+      const it = items[i];
+      const origin = x === 0 || x === 15 ? " oL" : x === 60 || x === 45 ? " oR" : "";
+      const leaf = leafButton(it, i, origin);
+      leaf.style.left = x + "cqw";
+      leaf.style.top = `calc(${row * ROW_H}cqw + 1.6cqw)`;
+      leaf.style.zIndex = row * 10 + 1 + ((k + row) % 3);
+      boxEl.append(leaf); leaves.push(leaf);
+      i++;
+    });
+    row++;
+    if (!items.length) break;
+  }
+  const rows = Math.max(row, 1);
+  boxEl.style.height = `calc(${(rows - 1) * ROW_H}cqw + ${LEAF_W * 1.4 + 6}cqw)`;
+  const closeAll = () => { leaves.forEach((l) => { l.classList.remove("open"); l.setAttribute("aria-expanded", "false"); }); wall.classList.remove("has-open"); };
+  leaves.forEach((l) => l.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const was = l.classList.contains("open");
+    closeAll();
+    if (!was) { l.classList.add("open"); l.setAttribute("aria-expanded", "true"); wall.classList.add("has-open"); }
+  }));
+  wall.addEventListener("click", closeAll);
+  wall.append(boxEl);
+  return wall;
+}
+function leafButton(it, i, origin) {
+  const fill = it.me ? "#f3d9a6" : LEAF_FILLS[i % LEAF_FILLS.length];
+  const stroke = it.me ? "#a8661f" : "#7fa863";
+  const svg = `<svg viewBox="0 0 150 210" aria-hidden="true"><path d="${leafShape()}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/><line x1="75" y1="10" x2="75" y2="194" stroke="${stroke}" stroke-width="1.2" opacity=".35"/><line x1="75" y1="0" x2="75" y2="13" stroke="#7a8c5a" stroke-width="3" stroke-linecap="round"/></svg>`;
+  const r = (i % 2 ? -1 : 1) * (2 + (i % 3) * 1.2);
+  return el("button", { class: "leaf2" + origin, type: "button", "aria-expanded": "false",
+      "aria-label": `${it.me ? "你的留言" : it.who + "的留言"}：${it.text}`, style: `--r:${r}deg;--d:${-(i % 5) * 1.3}s` },
+    el("span", { class: "string" }),
+    el("div", { class: "body", html: svg },
+      el("div", { class: "txt" }, it.text),
+      el("div", { class: "by" }, it.me ? "你・" : "", it.who, "・", el("b", null, it.title))));
+}
+
+/* ---------------- stats ---------------- */
+const SHORT = ["一心二葉", "茶樹葉緣", "製程排序", "竹炭除臭", "竹炭燃料", "焙火工藝", "小半天三金", "林爽文事件"];
+function viewStats() {
+  const box = el("div", { class: "wrap", style: "padding:0" });
+  box.append(el("p", { class: "eyebrow" }, "講師看板"), el("h2", null, "學習單作答統計"));
+  if (!DB.db || DB.failed) {
+    box.append(el("p", { class: "note" }, "目前讀不到作答資料：請確認 SHEET_URL 已填入 Apps Script 網址，且部署時「誰可以存取」選了「所有人」。"));
+  } else if (!DB.loaded && !DB.subs.length) {
+    box.append(el("p", { class: "note" }, DB.slow ? "資料暫時讀不到，稍後會自動更新。" : "讀取中…"));
+  } else if (!DB.subs.length) {
+    box.append(el("p", { class: "note" }, "還沒有人作答。"));
+  } else {
+    const n = DB.subs.length, avg = DB.subs.reduce((a, s) => a + s.score, 0) / n / SCORED;
+    box.append(el("div", { class: "tiles" },
+      el("div", { class: "tile" }, el("div", { class: "muted" }, "作答人數"), el("div", { class: "big" }, String(n))),
+      el("div", { class: "tile" }, el("div", { class: "muted" }, "平均答對率"), el("div", { class: "big" }, Math.round(avg * 100) + "%"))));
+    box.append(el("h3", null, "各題答對率"), el("p", { class: "muted" }, "紅色是答對率低於 60% 的題目，代表那個知識點要加強講解。"));
+    const bars = el("div", { class: "bars" });
+    SHORT.forEach((name, i) => {
+      const r = DB.subs.filter((s) => s.correct[i]).length / n;
+      bars.append(el("div", { class: "bar" }, el("span", null, `${i + 1}. ${name}`), el("div", { class: "track" }, el("div", { class: "fill" + (r < 0.6 ? " low" : ""), style: `width:${Math.round(r * 100)}%` })), el("span", null, Math.round(r * 100) + "%")));
+    });
+    box.append(bars);
+    box.append(el("h3", null, "稱號分布"));
+    const tb = el("div", { class: "bars" });
+    TITLES.slice().reverse().forEach((t) => {
+      const c = DB.subs.filter((s) => titleFor(s.score).name === t.name).length;
+      tb.append(el("div", { class: "bar" }, el("span", null, t.name), el("div", { class: "track" }, el("div", { class: "fill", style: `width:${Math.round(c / n * 100)}%;background:${t.c}` })), el("span", null, String(c))));
+    });
+    box.append(tb);
+  }
+  box.append(el("button", { class: "btn ghost", onclick: () => { location.hash = ""; } }, "回到學習單"));
+  return box;
+}
+
+/* ---------------- routing & hot reload ---------------- */
+function route() { if (location.hash === "#stats") { S.screen = "stats"; if (DB.poke) DB.poke(); } else if (S.screen === "stats") S.screen = "start"; render(); }
+window.addEventListener("hashchange", route);
+function start(saved) {
+  if (saved && saved.screen && saved.screen !== "stats") { S = Object.assign(fresh(), saved); }
+  route();
+}
+try { window.claude?.hot?.snapshot?.(() => (S.screen === "stats" ? {} : S)); } catch (e) {}
+if (window.claude?.hot?.ready) window.claude.hot.ready(start); else start(window.claude?.hot?.data ?? {});
+</script>
+</body>
+</html>
