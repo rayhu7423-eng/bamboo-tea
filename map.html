@@ -45,7 +45,7 @@
 }
 html,body{height:100%}
 body{background:var(--mist);color:var(--ink);font-family:var(--f-body);overflow:hidden;-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit}
+button{font:inherit;color:inherit;touch-action:manipulation}
 :focus-visible{outline:2px solid var(--field);outline-offset:2px}
 
 #stage{position:fixed;inset:0;background:var(--sky)}
@@ -75,6 +75,11 @@ button{font:inherit;color:inherit}
   text-shadow:0 0 4px var(--mist),0 0 2px var(--mist);white-space:nowrap;opacity:.78}
 .place-label.road{font:500 11px/1 var(--f-body);letter-spacing:.06em;opacity:.7}
 .place-label.area{color:var(--field);font-size:13px;opacity:.95}
+.pin-label .sh{display:none}
+.pin-label.got .sh::after{content:" ✓";color:var(--leaf);font-weight:700}
+.loading{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:10px;font:500 14px/1.5 var(--f-body);color:var(--muted);text-align:center;padding:0 24px 30vh}
+.loading i{width:28px;height:28px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--field);animation:spin 1s linear infinite;justify-self:center}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* overlay frame */
 .ui{position:fixed;inset:0;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
@@ -229,7 +234,7 @@ body.has-card .hud{right:calc(max(16px, env(safe-area-inset-right,0px)) + 376px)
 @keyframes introChar{to{opacity:1;transform:none}}
 @keyframes introFade{to{opacity:1}}
 @media (min-width: 760px){ .intro{left:calc(50% + 180px)} }
-@media (max-width: 759px){ .intro{top:calc(76px + env(safe-area-inset-top,0px))} .intro-plate{min-width:0;padding:12px 18px 26px} .intro-title{font-size:28px} .intro-sub{font-size:13px;letter-spacing:.14em} }
+@media (max-width: 759px){ .intro{top:calc(76px + env(safe-area-inset-top,0px))} .intro-plate{min-width:0;padding:12px 18px 26px} .intro-title{font-size:28px} .intro-sub{font-size:13px;letter-spacing:.14em} #intro-mid{display:none} }
 
 /* 回購示意 */
 .hud .btn.shop-btn{background:var(--field);border-color:var(--field);color:var(--on-field);font-weight:700}
@@ -295,7 +300,24 @@ body.has-card .hud{right:calc(max(16px, env(safe-area-inset-right,0px)) + 376px)
   .panel.min .lede,.panel.min .gold3,.panel.min .stops,.panel.min .legend,.panel.min .note,.panel.min .sources,.panel.min .passport{display:none}
   h1{font-size:24px}
   .lede{font-size:13px}
-  .collapse{display:inline-block}
+  .collapse{display:inline-block;padding:8px 14px;font-size:13px}
+  .btn{min-height:42px;padding:10px 14px;font-size:14px}
+  .btn.ghost{min-height:36px}
+  .card .close,.shop-head .close{width:40px;height:40px;font-size:18px}
+  .qty button{width:38px;height:36px;font-size:18px}
+  .btn.add{min-height:36px;padding:6px 16px}
+  .opts button{padding:11px 12px;font-size:14px}
+  .stop{padding:9px 6px}
+  .pin-label{font-size:12.5px;padding:3px 9px 3px 3px}
+  .pin-label .nm{display:none}
+  .pin-label .sh{display:inline}
+  .place-label.road:not(.key){display:none}
+  .place-label{font-size:12px}
+  .ui{padding-top:calc(76px + env(safe-area-inset-top,0px))}
+  .panel:not(.min){max-height:none;flex:1 1 auto;min-height:0}   /* 手機展開時改成整頁清單，看地圖時再收合 */
+  body.sheet-open #stage,body.sheet-open #labels{visibility:hidden}
+  .route-sum{flex-wrap:wrap}
+  .route-sum b{white-space:nowrap}
   .card{position:fixed;left:max(16px, env(safe-area-inset-left,0px));right:max(16px, env(safe-area-inset-right,0px));
     bottom:calc(16px + env(safe-area-inset-bottom,0px));width:auto;max-height:58%;z-index:5}
   .hud{top:calc(16px + env(safe-area-inset-top,0px));bottom:auto}
@@ -306,7 +328,7 @@ body.has-card .hud{right:calc(max(16px, env(safe-area-inset-right,0px)) + 376px)
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
 </style>
 
-<div id="stage" aria-label="小半天與竹山富州 3D 模擬地圖"></div>
+<div id="stage" aria-label="小半天與竹山富州 3D 模擬地圖"><div class="loading" id="loading"><i></i>3D 地圖載入中…<br>第一次開啟需要幾秒鐘</div></div>
 <div id="labels"></div>
 
 <main class="ui">
@@ -449,31 +471,31 @@ const SRC = {
   tripool:['tripool','https://www.tripool.app/articles/chushan-zi-nan-temple-transportatoin']
 };
 const SPOTS = [
-  {id:'center',name:'小半天遊客服務中心',mapq:'小半天休閒農業區',kind:'field',type:'報到・集合',x:-2,z:-15,r:3.9,blend:9,top:3.0,lab:'r',
+  {id:'center',short:'遊客中心',name:'小半天遊客服務中心',mapq:'小半天休閒農業區',kind:'field',type:'報到・集合',x:-2,z:-15,r:3.9,blend:9,top:3.0,lab:'r',
    look:'模擬模型：遊客服務中心平房、停車場、入口招牌和導覽地圖看板；屋後是孟宗竹林',
    desc:'小半天休閒農業區橫跨鹿谷鄉竹林、竹豐、和雅三個村，海拔約 500 到 1,600 公尺，經常雲霧繚繞，居民以種烏龍茶和孟宗竹筍為主。第一天 09:30 在這裡報到、領親子任務卡，之後由協會導遊帶自駕車隊進場；沒開車的家庭，由協會從台灣好行廣興站接駁上山。',
    prod:[],src:['tvbs05','udnblog','biz']},
-  {id:'battle',name:'挖筍趣・孟宗竹林',mapq:'孟宗竹林古戰場',kind:'field',type:'體驗・挖筍、竹林',x:-22,z:-6,r:4.6,top:7.8,lab:'d',
+  {id:'battle',short:'挖筍趣',name:'挖筍趣・孟宗竹林',mapq:'孟宗竹林古戰場',kind:'field',type:'體驗・挖筍、竹林',x:-22,z:-6,r:4.6,top:7.8,lab:'d',
    look:'模擬模型：高聳的孟宗竹林、林間小徑、解說碑、冒出地面的竹筍、竹簍和小鋤頭、藍腹鷴',
    desc:'協會的「半天挖筍趣」（每人 800 元）：走長源圳步道和孟宗竹林，聽清乾隆年間林爽文事件（1786–1788）最後一戰的故事，再親手挖筍；午餐吃竹腳仔飯，每人帶一斤筍回家。長源圳在 1924 年完工，解決了小半天的飲水和灌溉。竹林也是保育類藍腹鷴的觀察區，國際女星曾在這裡拍廣告。',
    prod:['孟宗竹筍','竹腳仔飯'],src:['gofun','yam10','pix','udnblog']},
-  {id:'taohua',name:'桃花源渡假村',mapq:'桃花源渡假村 鹿谷',kind:'field',type:'住宿・民宿',x:-9,z:-6,r:4.4,top:3.4,lab:'u',
+  {id:'taohua',short:'桃花源',name:'桃花源渡假村',mapq:'桃花源渡假村 鹿谷',kind:'field',type:'住宿・民宿',x:-9,z:-6,r:4.4,top:3.4,lab:'u',
    look:'模擬模型：兩層樓民宿和陽台、草地庭園、水池、涼亭、烤肉區和庭園燈',
    desc:'合法民宿（南投縣民宿 412 號）、好客民宿。景觀四人房 5 間、六人房 1 間，5 個家庭住得下；大庭園有水池、涼亭和烤肉區，晚上會點燈，孩子跑得開。早餐是現煮的在地野菜。民宿對面就是往孟宗竹林古戰場的步道，走路就到長源圳步道。第一天 14:30 入住休息。',
    prod:[],src:['funtime','skygate']},
-  {id:'tianmama',name:'田媽媽小半天風味餐坊',kind:'field',type:'晚餐・竹林茶宴',x:6,z:-2,r:4.2,top:3.4,lab:'r',
+  {id:'tianmama',short:'田媽媽',name:'田媽媽小半天風味餐坊',kind:'field',type:'晚餐・竹林茶宴',x:6,z:-2,r:4.2,top:3.4,lab:'r',
    look:'模擬模型：茶農家的平房餐坊、門口竹棚與長桌、醬筍甕、屋後茶園與竹林',
    desc:'位在竹豐村，是四代都靠茶園和竹林生活的茶農家族。田媽媽在九二一地震後到農會家政班學餐飲，開始把茶和筍入菜，招牌有阿嬤ㄟ醬筍丸、手工竹筍包和茶燻雞；現在由第三代接手製茶、說茶。第一天 17:00 在這裡吃「竹林茶宴」，每人 450 元，可預訂烏龍茶燻雞；晚餐時段 17:00–19:00。',
    prod:['醬筍丸','筍乾','醃梅','茶包'],src:['smile','green','arboris']},
-  {id:'tea',name:'協會螢火蟲茶席',mapq:'小半天休閒農業區',kind:'field',type:'賞螢・茶席',x:-10,z:10,r:4.1,top:2.8,lab:'l',
+  {id:'tea',short:'螢火蟲茶席',name:'協會螢火蟲茶席',mapq:'小半天休閒農業區',kind:'field',type:'賞螢・茶席',x:-10,z:10,r:4.1,top:2.8,lab:'l',
    look:'模擬模型：茅草茶亭、矮桌茶具和坐墊、燈籠、小溪與木橋、屋後茶園；開啟夜景模式可以看到螢火蟲',
    desc:'協會的「螢火蟲茶席」（3–5 月，大人小孩都是 600 元），含品茗、導覽、茶點和保險。先在茶席聽螢火蟲復育故事，協會復育螢火蟲已經 20 年；天黑後關燈，由解說員帶去賞螢，最佳時段 19:00–20:00，20:15 結束回民宿。只在 4 月出團，也避開月圓。',
    prod:['小半天烏龍茶'],src:['ctee26','kiki']},
-  {id:'qingzhu',name:'青竹文化園區',kind:'cross',type:'跨域・竹工藝',x:-2,z:-40,r:5.0,top:5.4,lab:'r',
+  {id:'qingzhu',short:'青竹',labN:'u',name:'青竹文化園區',kind:'cross',type:'跨域・竹工藝',x:-2,z:-40,r:5.0,top:5.4,lab:'r',
    look:'模擬模型：茅草竹屋、竹編 DIY 長桌（竹編青蛙、竹風車）、竹筒飯烤架、竹籬，四周是綠、黃、黑各色竹子',
    desc:'在竹山鎮富州里，號稱「賞竹大觀園」，種了來自五大洲、上百種竹子。第二天照富州官方推薦路線：竹生態導覽約 50 分鐘（入園大人 100、兒童 80）→ 竹工藝 DIY（竹編青蛙、竹編風車或彩繪竹筆筒，每項 200 元）→ 中午竹筒飯套餐；飯後集章換竹蜻蜓等竹童玩。假日 9–17 點開放。',
    prod:['竹炭片','竹炭除臭包','竹編青蛙','竹筒飯'],src:['st321','yamtrip']},
-  {id:'zinan',name:'竹山紫南宮',kind:'cross',type:'知名景點・土地公廟',x:-24,z:-38,r:4.9,top:3.6,lab:'l',
+  {id:'zinan',short:'紫南宮',labN:'l',name:'竹山紫南宮',kind:'cross',type:'知名景點・土地公廟',x:-24,z:-38,r:4.9,top:3.6,lab:'l',
    look:'模擬模型：金色屋頂的正殿和兩側廂房、紅色牌樓、廟埕、香爐、紅燈籠和金雞',
    desc:'全台知名的土地公廟，主祀福德正神，清乾隆十年（1745 年）建廟。光復初期開放居民向土地公借「福德金」，借錢創業有成的人回來還願，從此以「發財金」出名。免費參拜，有 4 個停車場；廟前的大公街可以吃番薯筍包。第二天 13:15 順遊，14:30 解散，自駕約 10 分鐘上竹山交流道；沒開車的家庭可搭紫南宮免費接駁車到交流道，再轉台灣好行 6883。',
    prod:['番薯筍包'],src:['nownews','st321','tripool']}
@@ -543,7 +565,7 @@ const SHOP_CATS=[['all','全部'],['tea','綠金・茶與竹'],['shoot','黃金�
 const SHOP_IC={tea:'茶',shoot:'筍',char:'炭'};
 const PLACES = [
   {t:'國道 3 號',x:-38.5,z:-25,cls:'road'},
-  {t:'竹山交流道',x:-32,z:-36.5,cls:'road'},
+  {t:'竹山交流道',x:-32,z:-36.5,cls:'road key'},
   {t:'竹山市區',x:-28,z:-20,cls:''},
   {t:'151 縣道・往小半天',x:8,z:-26,cls:'road'},
   {t:'鹿谷市區',x:33,z:-31,cls:''},
@@ -556,7 +578,7 @@ const PLACES = [
 function loadScript(urls){return new Promise((res,rej)=>{let i=0;const next=()=>{if(i>=urls.length){rej(new Error('script'));return;}
   const el=document.createElement('script');el.src=urls[i++];el.onload=()=>res();el.onerror=()=>{el.remove();next();};document.head.appendChild(el);};next();});}
 function showProblem(kind){
-  const stage=document.getElementById('stage');const box=document.createElement('div');box.className='problem';
+  const stage=document.getElementById('stage');const ld=document.getElementById('loading');if(ld)ld.remove();const box=document.createElement('div');box.className='problem';
   const msg={script:'3D 函式庫沒有載入成功，可能是網路擋住了外部資源。',webgl:'這個瀏覽器沒有開啟 WebGL，所以畫不出 3D 地形。',other:'3D 地圖初始化時出錯了。'}[kind]||'3D 地圖初始化時出錯了。';
   box.innerHTML='<b>3D 地圖暫時無法顯示</b><p></p><p>可以改用電腦版 Chrome 或 Edge 開啟，並確認設定裡的「使用硬體加速」已開啟。路線清單仍可查看。</p>';
   box.querySelector('p').textContent=msg;stage.appendChild(box);
@@ -621,7 +643,7 @@ const teaZone=(x,z)=>TEAZ.some(([cx,cz,r])=>Math.hypot(x-cx,z-cz)<r);
 /* ---------- three setup ---------- */
 const stage=document.getElementById('stage');
 let renderer;try{renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch(e){throw new Error('WebGL unavailable');}
-renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,narrow()?1.5:2));
 renderer.shadowMap.enabled=!narrow();
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 stage.appendChild(renderer.domElement);
@@ -1117,9 +1139,9 @@ SPOTS.forEach(s=>{const g=new THREE.Group();const y0=s.y+s.top;
 const labelLayer=document.getElementById('labels');
 const anchors=[];
 SPOTS.forEach(s=>{const b=document.createElement('button');b.className='pin-label '+s.kind;b.dataset.id=s.id;
-  b.innerHTML='<span class="num"></span><span class="nm"></span>';b.querySelector('.nm').textContent=s.name;
+  b.innerHTML='<span class="num"></span><span class="nm"></span><span class="sh"></span>';b.querySelector('.nm').textContent=s.name;b.querySelector('.sh').textContent=s.short||s.name;b.setAttribute('aria-label',s.name);
   b.addEventListener('click',()=>{stopTour();select(s.id,true);});labelLayer.appendChild(b);s.el=b;
-  anchors.push({el:b,v:new THREE.Vector3(s.x,s.y+s.top+1.6,s.z),lab:s.lab});});
+  anchors.push({el:b,v:new THREE.Vector3(s.x,s.y+s.top+1.6,s.z),lab:s.lab,labN:s.labN});});
 PLACES.forEach(pl=>{const d=document.createElement('div');d.className='place-label '+pl.cls;d.textContent=pl.t;labelLayer.appendChild(d);
   anchors.push({el:d,v:new THREE.Vector3(pl.x,hY(pl.x,pl.z)+.6,pl.z),lab:'c'});});
 const OFF={d:'translate(-50%,16px)',r:'translate(16px,-50%)',l:'translate(calc(-100% - 16px),-50%)',u:'translate(-50%,calc(-100% - 14px))',c:'translate(-50%,-50%)'};
@@ -1127,7 +1149,7 @@ const pv=new THREE.Vector3();
 function placeLabels(){const w=innerWidth,h=innerHeight;
   for(const a of anchors){pv.copy(a.v).project(camera);
     if(pv.z>1||pv.x<-1.2||pv.x>1.2||pv.y<-1.2||pv.y>1.2){a.el.style.visibility='hidden';continue;}
-    a.el.style.visibility='';a.el.style.transform=`translate(${(pv.x*.5+.5)*w}px,${(-pv.y*.5+.5)*h}px) ${OFF[a.lab]}`;}}
+    a.el.style.visibility='';a.el.style.transform=`translate(${(pv.x*.5+.5)*w}px,${(-pv.y*.5+.5)*h}px) ${OFF[(a.labN&&narrow())?a.labN:a.lab]}`;}}
 
 /* ---------- route ---------- */
 let curRoute='a',routeMesh=null,routeGlow=null,routeCurve=null,routeStopU=[];
@@ -1255,6 +1277,7 @@ function syncActive(){
   document.querySelectorAll('.stop').forEach(b=>b.classList.toggle('active',b.dataset.id===selected));
 }
 function select(id,fly){
+  if(narrow()&&!panel.classList.contains('min')){panel.classList.add('min');collapseBtn.textContent='展開';collapseBtn.setAttribute('aria-expanded','false');}
   selected=id;const s=BY[id];fillCard(s);card.hidden=false;document.body.classList.add('has-card');syncActive();resize();
   const li=document.querySelector(`.stop[data-id="${id}"]`);if(li&&!narrow())li.scrollIntoView({block:'nearest'});
   if(fly)return flyToSpot(s);
@@ -1270,8 +1293,8 @@ function flyTo(pos,target,dur){
   return new Promise(res=>{if(reduce||!dur){camera.position.copy(pos);controls.target.copy(target);controls.update();res();return;}
     tween={p0:camera.position.clone(),t0:controls.target.clone(),p1:pos.clone(),t1:target.clone(),start:performance.now(),dur,res,arc:Math.min(18,camera.position.distanceTo(pos)*.2)};});}
 function orbitPos(target,az,pol,dist){return new THREE.Vector3(target.x+dist*Math.sin(pol)*Math.sin(az),target.y+dist*Math.cos(pol),target.z+dist*Math.sin(pol)*Math.cos(az));}
-function homePose(){const n=narrow();const t=n?new THREE.Vector3(-9,6,-14):new THREE.Vector3(-8,6,-12);return {t,p:orbitPos(t,HOME_AZ,n?1.0:.92,n?190:118)};}
-const HOME_AZ=Math.PI+.46;
+// 電腦：從西北往東南看；手機直式：從北往南看，整條路線上下排開
+function homePose(){const n=narrow();const t=n?new THREE.Vector3(-11,5,-15):new THREE.Vector3(-8,6,-12);const az=n?Math.PI:Math.PI+.46,pol=n?.82:.92,d=n?215:118;return {t,az,pol,d,p:orbitPos(t,az,pol,d)};}
 function flyHome(d){const h=homePose();return flyTo(h.p,h.t,d);}
 function flyToSpot(s){const t=new THREE.Vector3(s.x,s.y+s.top*.5,s.z);const az=s.view!=null?s.view:controls.getAzimuthalAngle();return flyTo(orbitPos(t,az,1.08,(narrow()?38:28)+s.r*1.6),t,1600);}
 document.getElementById('reset').addEventListener('click',()=>{stopTour();flyHome(1100);});
@@ -1300,9 +1323,9 @@ function endIntro(){
 async function intro(my){
   closeCard();startIntro();
   const h=homePose(),n=narrow();
-  await orbitTo(h.t,HOME_AZ-1.15,.5,n?236:220,1400);if(my!==touring)return;
+  await orbitTo(h.t,h.az-1.15,.5,n?236:220,1400);if(my!==touring)return;
   introDraw={start:performance.now()+400,dur:4000};
-  await orbitTo(h.t,HOME_AZ,n?1.0:.92,n?190:118,5000);if(my!==touring)return;
+  await orbitTo(h.t,h.az,h.pol,h.d,5000);if(my!==touring)return;
   await wait(500);if(my!==touring)return;
   introEl.classList.remove('show');introEl.classList.add('leave');
   await wait(650);if(my!==touring)return;
@@ -1397,6 +1420,7 @@ nightBtn.addEventListener('click',()=>{night=!night;nightBtn.setAttribute('aria-
 /* ---------- mobile collapse ---------- */
 const panel=document.getElementById('panel'),collapseBtn=document.getElementById('collapse');
 collapseBtn.addEventListener('click',()=>{const min=panel.classList.toggle('min');collapseBtn.textContent=min?'展開':'收合';collapseBtn.setAttribute('aria-expanded',String(!min));resize();});
+if(narrow()){panel.classList.add('min');collapseBtn.textContent='展開';collapseBtn.setAttribute('aria-expanded','false');}   // 手機先收合面板，地圖優先
 
 /* ---------- theme ---------- */
 function applyTheme(){
@@ -1413,6 +1437,7 @@ new MutationObserver(applyTheme).observe(document.documentElement,{attributes:tr
 /* ---------- sizing ---------- */
 function resize(){
   const w=innerWidth,h=innerHeight;if(!w||!h)return;renderer.setSize(w,h,false);
+  document.body.classList.toggle('sheet-open',narrow()&&card.hidden&&!panel.classList.contains('min'));
   let fw=w,fh=h,ox=0,oy=0;
   if(narrow()){const el=card.hidden?panel:card;const ph=Math.min(el.getBoundingClientRect().height+16,h*.62);fh=h+ph;oy=ph;}
   else{const pw=panel.getBoundingClientRect().width+16,cw=card.hidden?0:card.getBoundingClientRect().width+16,sh=(pw-cw)/2;fw=w+2*Math.abs(sh);ox=sh<0?2*Math.abs(sh):0;}
@@ -1422,7 +1447,7 @@ addEventListener('resize',resize);if(window.ResizeObserver)new ResizeObserver(()
 
 /* ---------- loop ---------- */
 const needle=document.getElementById('needle');let last=performance.now(),u=0;
-let frameErr=false;
+let frameErr=false,loadingEl=document.getElementById('loading');
 function frame(now){
   requestAnimationFrame(frame);try{
   const dt=Math.max(0,Math.min(.05,(now-last)/1000));last=now;
@@ -1442,7 +1467,7 @@ function frame(now){
   }
   if(routeCurve){dot.position.copy(routeCurve.getPointAt(introP!=null?Math.min(introP,.9999):(reduce?0:u)));}
   needle.style.transform=`rotate(${controls.getAzimuthalAngle()}rad)`;
-  renderer.render(scene,camera);placeLabels();
+  renderer.render(scene,camera);placeLabels();if(loadingEl){loadingEl.remove();loadingEl=null;}
   }catch(e){if(!frameErr){frameErr=true;console.error(e);}}
 }
 
